@@ -43,6 +43,41 @@ func sum(result chan int, nums ...int) {
 	result <- total
 }
 
+func emailSending(emailChan chan string, done chan bool) {
+	defer func() {
+		done <- true
+	}()
+	for email := range emailChan {
+		fmt.Println("sending email to ", email)
+		time.Sleep(time.Second)
+	}
+}
+
+func selectCase() {
+	chan1 := make(chan int)
+	chan2 := make(chan string)
+
+	//assigning values
+	go func() {
+		chan1 <- 25
+	}()
+	go func() {
+		chan2 <- "bhai"
+
+	}()
+
+	//printing
+	for range 2 {
+		select {
+		case chan1Val := <-chan1:
+			fmt.Println(chan1Val)
+		case chan2Val := <-chan2:
+			fmt.Println(chan2Val)
+
+		}
+	}
+}
+
 func main() {
 	// deadLock()
 	//sending channels data
@@ -67,8 +102,25 @@ func main() {
 	//goroutine synchronizer
 	done := make(chan bool)
 
-	go task(done)
+	// go task(done)
 
-	<-done// for blocking the program
+	// <-done// for blocking the program
+
+	//email sending
+	emailChan := make(chan string, 100)
+
+	for n := range 2 {
+		emailChan <- fmt.Sprintf("%d@gmail.com", n)
+
+	}
+
+	go emailSending(emailChan, done)
+
+	close(emailChan) //closing  channels
+
+	<-done // for blocking the program
+
+	//select Case
+	selectCase()
 
 }
